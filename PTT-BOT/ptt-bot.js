@@ -148,7 +148,7 @@
 
 		g_conn = net.createConnection(23, 'ptt.cc');
 		
-		g_conn.setTimeout(2000);
+		g_conn.setTimeout(100);
 	
 		g_commandsObj.callbacks.push((callback ? callback : function(){}));	
 	
@@ -175,9 +175,13 @@
 		
 			var newdataStr = g_newData;
 		
+			if(!error)
 			switch( g_workingState ){		
 				case State_ExcutingLogin:
-					loginDataHandler(newdataStr, id, ps);
+					if(!loginDataHandler(newdataStr, id, ps)) {
+						error = true
+						errorCallBack()
+					}
 					break;
 				
 				case State_LoadNextPttbotComand:
@@ -703,6 +707,13 @@
 			sendCommand( ps+'\r' );
 			console.log("[32m(已輸入密碼)[m");
 		}		
+
+		if (newdataStr.indexOf("密碼不對或無此帳號") != -1){
+			console.log("[1;33m密碼錯誤:[m");
+			sendCommand( ps+'\r' );
+			return false;
+			// console.log("[32m(已輸入密碼)[m");
+		}		
 	
 		if (newdataStr.indexOf("歡迎您再度拜訪") != -1){
 			console.log("[1;33m歡迎您再度拜訪![m");
@@ -726,6 +737,7 @@
 
 		}	
 
+		return true;
 	}
 
 	function ReturningMainDataHandler(newdataStr){
